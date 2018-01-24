@@ -1,53 +1,114 @@
+#include "F2806x_Device.h"
+#define DISABLE(x) (x) << 6 | 1 << 5 | 1 << 3
+
+/**
+ * main.c
+ */
 
 /*
+ *  PB1 GPIO 17/88
+ *  PB2 GPIO 40/30
+ *
+ *  LED1 GPIO 09/78
+ *  LED2 GPIO 11/79
+ *  LED3 GPIO 34/46
+ *  LED4 GPIO 41/80
+ *
+ */
 
-Lab 2 Task 1
+Uint32 j = 2;
 
-Nelson Raphael
+int main(void)
+{
+    EALLOW;
 
-Learning GPIO implementation with a push button
+    if (j == 1) {
+        SysCtrlRegs.WDCR = DISABLE(1);
+
+    }
+    /*
+     * Initialization
+     * All inputs are set to 0 and outputs to 1
+     */
+
+    GpioCtrlRegs.GPADIR.bit.GPIO17 = 0;
+    GpioCtrlRegs.GPBDIR.bit.GPIO40 = 0;
+    GpioCtrlRegs.GPADIR.bit.GPIO9 = 1;
+    GpioCtrlRegs.GPADIR.bit.GPIO11 = 1;
+    GpioCtrlRegs.GPBDIR.bit.GPIO41 = 1;
+    GpioCtrlRegs.GPBDIR.bit.GPIO34 = 1;
+
+    /*
+     * Initialization
+     * All inputs have their pull up transistors enabled
+     * All outputs have their pull up transistors disabled
+     */
+    GpioCtrlRegs.GPAPUD.bit.GPIO17 = 0;
+    GpioCtrlRegs.GPBPUD.bit.GPIO40 = 0;
+
+    GpioCtrlRegs.GPBPUD.bit.GPIO41 = 1;
+    GpioCtrlRegs.GPBPUD.bit.GPIO34 = 1;
+    GpioCtrlRegs.GPAPUD.bit.GPIO9 = 1;
+    GpioCtrlRegs.GPAPUD.bit.GPIO11 = 1;
+
+    /*
+       * Initialization
+       * All MUXs are set to 0 to enable
+       */
+    GpioCtrlRegs.GPAMUX2.bit.GPIO17 = 0;
+    GpioCtrlRegs.GPBMUX1.bit.GPIO40 = 0;
+    GpioCtrlRegs.GPAMUX1.bit.GPIO9 = 0;
+    GpioCtrlRegs.GPAMUX1.bit.GPIO11 = 0;
+
+    GpioCtrlRegs.GPBMUX1.bit.GPIO41 = 0; //LED3
+    GpioCtrlRegs.GPBMUX1.bit.GPIO43 = 0; //led4
 
 
-*/
+    Uint32 PB1;
+    Uint32 PB2;
 
+    Uint32 curr = 1;/*Setting up the toggle variables */
+    Uint32 prev = 0;
 
-int main(void) {
+    GpioDataRegs.GPBCLEAR.bit.GPIO41 = 0;
+    GpioDataRegs.GPBCLEAR.bit.GPIO34 = 0;
 
-/* PB1 GPIO 17/88
-PB2 GPIO 48/30
-Digital for Arduion PB88
+    while(1) {
 
-MUX
-
-2 LED Activation
-
-GPIO 09/78 LED 1
-
-GPIO 11/79 LED 2
-
-MUX
-
-
-*/
-
-GpioCtrlRegs.GP17MUX.bit.GPIO
-
-while(1) {
-
-GpioDataRegs.GP?SET.bit.GPIO? /*  Sets it high - use this instead of writing one to it*/
-
-GpioDataRegs.GP?CLEAR.bit.GPIO? /* Sets it low - use this instead of writing zero to it*/
-
-
-GpioDataRegs.GP?TOGGLE.bit.GPIO? /* Sets it to the opposite state*/
+        /*
+                 * Reading the input
+                 */
+                PB1 = GpioDataRegs.GPADAT.bit.GPIO17;
+                PB2 = GpioDataRegs.GPBDAT.bit.GPIO40;
 
 
 
+       // curr = !curr;
+       // if(curr != prev){
+            /*
+             * Writing the output
+             */
+// CREATE IF STATEMETENTS INSTEAD OF THIS LOGIC
+                    GpioDataRegs.GPASET.bit.GPIO9 = !PB1;
+                    GpioDataRegs.GPASET.bit.GPIO11 = !PB2;
+       // } else { /* turning off the LEDS */
+
+            GpioDataRegs.GPACLEAR.bit.GPIO9 = !PB1;
+            GpioDataRegs.GPACLEAR.bit.GPIO11 = !PB2;
+
+           // prev = curr;
+
+        //}
 
 
 
 
-}
-return 0;
 
+        if(j == 2) { /*Servicing the watchdog */
+
+            SysCtrlRegs.WDKEY = 0x55;
+            SysCtrlRegs.WDKEY = 0xAA;
+        }
+    }
+	return 0;
 }
